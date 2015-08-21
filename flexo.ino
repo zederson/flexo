@@ -2,6 +2,8 @@ const int SENS_TEMP = 1;
 const int SENS_LUZ  = 0;
 const int LED = 8;
 
+boolean state_socket_1 = false;
+
 void setup() {
   Serial.begin(9600);
   analogReference(INTERNAL);
@@ -11,6 +13,8 @@ void setup() {
 void loop() {
   printTemperatura();
   printLuminozidade();
+  printSocketState();
+  
   delay(2000);
 }
 
@@ -33,14 +37,23 @@ void printLuminozidade() {
   Serial.println(out);
 }
 
+void printSocketState() {
+  String out = "Socket_1[";
+  out       += state_socket_1;
+  out       += "]";
+  Serial.println(out);
+}
+
 void serialEvent() {
   int val = 0;
   while (Serial.available()) {
     val = Serial.read();
 
     if(val == 1) {
+      state_socket_1 = true;
       digitalWrite(LED, HIGH);
-    } else {
+    } else if (val == 101) {
+      state_socket_1 = false;
       digitalWrite(LED, LOW);
     }
   }
