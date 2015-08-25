@@ -1,13 +1,16 @@
+#include <SerialRelay.h>
+
 const int SENS_TEMP = 1;
 const int SENS_LUZ  = 0;
-const int LED = 8;
+const byte NumModules = 1;
+SerialRelay relays(9,8,NumModules); // (data, clock, number of modules)
 
 boolean state_socket_1 = false;
 
 void setup() {
   Serial.begin(9600);
   analogReference(INTERNAL);
-  pinMode(LED, OUTPUT);
+  Serial.println("");  
 }
 
 void loop() {
@@ -51,10 +54,10 @@ void serialEvent() {
 
     if(val == 1) {
       state_socket_1 = true;
-      digitalWrite(LED, HIGH);
+      relays.SetRelay(1, SERIAL_RELAY_ON, 1);
     } else if (val == 101) {
       state_socket_1 = false;
-      digitalWrite(LED, LOW);
+      relays.SetRelay(1, SERIAL_RELAY_OFF, 1);
     }
   }
 }
