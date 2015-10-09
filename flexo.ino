@@ -1,16 +1,16 @@
 #include <SerialRelay.h>
 
+SerialRelay relays(8,9,1); // (data, clock, number of modules)
+
 const int SENS_TEMP = 1;
 const int SENS_LUZ  = 0;
-const byte NumModules = 1;
-SerialRelay relays(9,8,NumModules); // (data, clock, number of modules)
-
 boolean state_socket_1 = false;
+String stringRead;
 
 void setup() {
   Serial.begin(9600);
   analogReference(INTERNAL);
-  Serial.println("");  
+  Serial.println();
 }
 
 void loop() {
@@ -48,16 +48,15 @@ void printSocketState() {
 }
 
 void serialEvent() {
-  int val = 0;
   while (Serial.available()) {
-    val = Serial.read();
+    stringRead = Serial.readStringUntil('\n');
 
-    if(val == 1) {
+    if(stringRead == "1") {
       state_socket_1 = true;
-      relays.SetRelay(1, SERIAL_RELAY_ON, 1);
-    } else if (val == 101) {
+      relays.SetRelay(2, SERIAL_RELAY_ON, 1);
+    } else if (stringRead == "101") {
       state_socket_1 = false;
-      relays.SetRelay(1, SERIAL_RELAY_OFF, 1);
+      relays.SetRelay(2, SERIAL_RELAY_OFF, 1);
     }
   }
 }
