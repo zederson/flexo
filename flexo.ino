@@ -1,11 +1,11 @@
 #include <SerialRelay.h>
 #include <IRremote.h>
 
-SerialRelay relays(8,9,1); // (data, clock, number of modules)
+SerialRelay relays(6,7,1); // (data, clock, number of modules)
 
 const int SENS_TEMP    = 1;
 const int SENS_LUZ     = 0;
-const int IR_PIN       = 10;
+const int IR_PIN       = 4;
 const int LED_IR       = 3;
 
 boolean state_socket_1 = false;
