@@ -1,9 +1,12 @@
 #include <SerialRelay.h>
 #include <IRremote.h>
+#include "DHT.h"
+#define DHTPIN A1 // pino que estamos conectado
+#define DHTTYPE DHT11 // DHT 11
 
+DHT dht(DHTPIN, DHTTYPE);
 SerialRelay relays(6,7,1); // (data, clock, number of modules)
 
-const int SENS_TEMP    = 1;
 const int SENS_LUZ     = 0;
 const int IR_PIN       = 4;
 const int LED_IR       = 3;
@@ -13,7 +16,6 @@ String stringRead;
 
 IRrecv irrecv(IR_PIN);
 IRsend irsend;
-
 decode_results results;
 
 void setup() {
@@ -21,7 +23,7 @@ void setup() {
   analogReference(INTERNAL);
   pinMode(LED_IR ,OUTPUT);
   irrecv.enableIRIn();
-  Serial.println();
+  dht.begin();
 }
 
 void loop() {
@@ -33,18 +35,23 @@ void loop() {
 }
 
 void printTemperatura() {
-  int value         = analogRead(SENS_TEMP);
-  float temperatura = value * 0.1075268817204301;
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  if (!isnan(t) && !isnan(h)) {
+    String out = "Temperatura[";
+    out       += t;
+    out       += "]";
+    Serial.println(out);
 
-  String out = "Temperatura[";
-  out       += temperatura;
-  out       += "]";
-  Serial.println(out);
+    out = "Humidade[";
+    out       += h;
+    out       += "]";
+    Serial.println(out);
+  }
 }
 
 void printLuminozidade() {
   int value = analogRead(SENS_LUZ);
-
   String out = "Luminozidade[";
   out       += value;
   out       += "]";
@@ -90,4 +97,3 @@ void processIR() {
     Serial.println(out);
   }
 }
-
