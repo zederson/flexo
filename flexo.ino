@@ -31,6 +31,7 @@ void loop() {
   printLuminozidade();
   printSocketState();
   processIR();
+
   delay(1000);
 }
 
@@ -52,8 +53,9 @@ void printTemperatura() {
 
 void printLuminozidade() {
   int value = analogRead(SENS_LUZ);
+  float val = value / 1023.0 * 100.0;
   String out = "Luminozidade[";
-  out       += value;
+  out       += val;
   out       += "]";
   Serial.println(out);
 }
