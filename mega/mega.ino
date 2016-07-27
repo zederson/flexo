@@ -105,6 +105,5 @@ void printRain() {
 }
 
 String buildPrintTemplate(String key, String value) {
-  String out = key + "[" + value + "]";
-  return out;
+  return key + "[" + value + "]";
 }

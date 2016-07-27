@@ -1,89 +1,77 @@
-#include <SerialRelay.h>
 #include <IRremote.h>
 #include "DHT.h"
-#define DHTPIN A1 // pino que estamos conectado
-#define DHTTYPE DHT11 // DHT 11
+
+#define DHTTYPE   DHT11
+#define IR_PIN    12
+#define LED_IR    3
+#define GAS_PIN   A0
+#define DHTPIN    A1
+#define SENS_LUZ  A2
 
 DHT dht(DHTPIN, DHTTYPE);
-SerialRelay relays(6,7,1); // (data, clock, number of modules)
-
-const int SENS_LUZ     = 0;
-const int IR_PIN       = 4;
-const int LED_IR       = 3;
-
-boolean state_socket_1 = false;
-String stringRead;
-
 IRrecv irrecv(IR_PIN);
 IRsend irsend;
 decode_results results;
+String stringRead;
 
 void setup() {
   Serial.begin(9600);
   analogReference(INTERNAL);
   pinMode(LED_IR ,OUTPUT);
+  pinMode(GAS_PIN, INPUT);
   irrecv.enableIRIn();
   dht.begin();
 }
 
 void loop() {
+  processIR();
+  printAll();
+  delay(1000);
+}
+
+void printAll() {
   printTemperatura();
   printLuminozidade();
-  printSocketState();
-  processIR();
+  printBreathalyzer();
+}
 
-  delay(1000);
+String buildPrintTemplate(String key, String value) {
+  return key + "[" + value + "]";
 }
 
 void printTemperatura() {
   float h = dht.readHumidity();
   float t = dht.readTemperature();
   if (!isnan(t) && !isnan(h)) {
-    String out = "Temperatura[";
-    out       += t;
-    out       += "]";
-    Serial.println(out);
-
-    out = "Humidade[";
-    out       += h;
-    out       += "]";
-    Serial.println(out);
+    Serial.println(buildPrintTemplate("TEMPERATURA", String(t)));
+    Serial.println(buildPrintTemplate("HUMIDADE", String(h)));
   }
 }
 
 void printLuminozidade() {
-  int value = analogRead(SENS_LUZ);
-  float val = value / 1023.0 * 100.0;
-  String out = "Luminozidade[";
-  out       += val;
-  out       += "]";
+  int value  = analogRead(SENS_LUZ);
+  float val  = value / 1023.0 * 100.0;
+  String out = buildPrintTemplate("LUMINOZIDADE", String(val));
   Serial.println(out);
 }
 
-void printSocketState() {
-  String out = "Socket_1[";
-  out       += state_socket_1;
-  out       += "]";
-  Serial.println(out);
+void printBreathalyzer() {
+  int value  = analogRead(GAS_PIN);
+  Serial.println(buildPrintTemplate("BAFOMETRO", String(value)));
 }
 
 void serialEvent() {
   while (Serial.available()) {
     stringRead = Serial.readStringUntil('\n');
-    if(stringRead == "1") {
-      state_socket_1 = true;
-      relays.SetRelay(2, SERIAL_RELAY_ON, 1);
-    } else if (stringRead == "101") {
-      state_socket_1 = false;
-      relays.SetRelay(2, SERIAL_RELAY_OFF, 1);
-    } else if(stringRead.indexOf("IR|") > -1) {
-      stringRead.replace("IR|", "");
-      sendIR(stringRead);
+
+    if(stringRead.indexOf("IR|") > -1) {
+      sendIR(String(stringRead));
     }
   }
 }
 
 void sendIR(String value) {
+  value.replace("IR|", "");
   irsend.sendNEC(strtoul(value.c_str(), 0, 16) ,32);
   irrecv.enableIRIn();
   irrecv.resume();
@@ -91,9 +79,7 @@ void sendIR(String value) {
 
 void processIR() {
   if (irrecv.decode(&results)) {
-    String out = "IR_RECEIVE[";
-    out       += String(results.value, HEX);
-    out       += "]";
+    String out = buildPrintTemplate("IR_RECEIVE", String(results.value, HEX));
     out.toUpperCase();
     irrecv.resume();
     Serial.println(out);
