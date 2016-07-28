@@ -1,18 +1,18 @@
 
 # RELE
 this project supported 4 reles
-## start
+## read
 ```
-RELE${index},${1|0}
+RELE_${index}|${1|0}
 ```
 ### on rele 1
 ```
-RELE1,1
+RELE1|1
 ```
 
 ### off rele 1
 ```
-RELE1,0
+RELE1|0
 ```
 
 # MOTOR STEP

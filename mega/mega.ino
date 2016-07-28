@@ -41,7 +41,7 @@ void serialEvent() {
 
 void processRele(String values) {
   values.replace("RELE", "");
-  int index  = values.indexOf(",");
+  int index  = values.indexOf("|");
   int port   = values.substring(0, index).toInt();
   int action = values.substring(index+1).toInt();
   relays.SetRelay(port, action, 1);
